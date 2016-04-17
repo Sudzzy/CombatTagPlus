@@ -3,8 +3,10 @@ package net.minelink.ctplus.listener;
 import com.google.common.collect.ImmutableSet;
 import net.minelink.ctplus.CombatTagPlus;
 import net.minelink.ctplus.Tag;
+import net.minelink.ctplus.event.CombatUntagReason;
 import net.minelink.ctplus.event.PlayerCombatTagEvent;
 import net.minelink.ctplus.task.SafeLogoutTask;
+import net.minelink.ctplus.task.TagExpireTask;
 import net.minelink.ctplus.task.TagUpdateTask;
 import org.bukkit.GameMode;
 import org.bukkit.entity.AnimalTamer;
@@ -166,11 +168,11 @@ public final class TagListener implements Listener {
         if (player.hasPermission("ctplus.bypass.tag")) return;
 
         // Do nothing if player is not tagged
-        Tag tag = plugin.getTagManager().getTag(player.getUniqueId());
-        if (tag == null) return;
+        TagExpireTask expireTask = plugin.getTagManager().getTagExpireTask(player.getUniqueId());
+        if (expireTask == null || !expireTask.isRunning()) return;
 
         // Reset the tag duration
-        tag.setExpireTime(System.currentTimeMillis() + (plugin.getSettings().getTagDuration() * 1000));
+        expireTask.update(plugin.getSettings().getTagDurationTicks());
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -179,7 +181,7 @@ public final class TagListener implements Listener {
 
         // Remove combat tag from player if not a NPC
         if (!plugin.getNpcPlayerHelper().isNpc(player)) {
-            plugin.getTagManager().untag(player.getUniqueId());
+            plugin.getTagManager().untag(player.getUniqueId(), CombatUntagReason.DEATH);
         }
     }
 
@@ -190,7 +192,7 @@ public final class TagListener implements Listener {
 
         // Remove the players tag
         Player player = event.getPlayer();
-        plugin.getTagManager().untag(player.getUniqueId());
+        plugin.getTagManager().untag(player.getUniqueId(), CombatUntagReason.KICK);
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)

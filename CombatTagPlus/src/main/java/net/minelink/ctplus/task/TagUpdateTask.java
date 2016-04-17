@@ -43,7 +43,7 @@ public final class TagUpdateTask extends BukkitRunnable {
 
         // Cancel if player is no longer tagged
         Tag tag = plugin.getTagManager().getTag(playerId);
-        if (tag == null || tag.isExpired()) {
+        if (tag == null) {
             if (plugin.getSettings().useBarApi()) {
                 BarUtils.setMessage(player, plugin.getSettings().getBarApiEndedMessage(), 1);
             }
@@ -56,8 +56,8 @@ public final class TagUpdateTask extends BukkitRunnable {
         }
 
         if (plugin.getSettings().useBarApi()) {
-            int remainingDuration = tag.getTagDuration();
-            int tagDuration = plugin.getSettings().getTagDuration();
+            int remainingDuration = plugin.getTagManager().getTagExpireTask(playerId).getRemainingTicks();
+            int tagDuration = plugin.getSettings().getTagDurationTicks();
             float percent = ((float) remainingDuration / tagDuration) * 100;
             String remaining = DurationUtils.format(remainingDuration);
 

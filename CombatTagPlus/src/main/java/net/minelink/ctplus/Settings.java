@@ -184,6 +184,10 @@ public final class Settings {
         return plugin.getConfig().getInt("tag-duration", 15);
     }
 
+    public int getTagDurationTicks() {
+        return getTagDuration() * 20;
+    }
+
     public String getTagMessage() {
         String message = plugin.getConfig().getString("tag-message", "");
         return ChatColor.translateAlternateColorCodes('&', message);
@@ -298,8 +302,8 @@ public final class Settings {
         return plugin.getConfig().getInt("npc-despawn-time", 60);
     }
 
-    public int getNpcDespawnMillis() {
-        return getNpcDespawnTime() * 1000;
+    public int getNpcDespawnTicks() {
+        return getNpcDespawnTime() * 20;
     }
 
     public boolean resetDespawnTimeOnHit() {

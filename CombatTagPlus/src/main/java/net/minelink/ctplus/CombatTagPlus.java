@@ -13,6 +13,7 @@ import net.minelink.ctplus.listener.TagListener;
 import net.minelink.ctplus.task.ForceFieldTask;
 import net.minelink.ctplus.task.SafeLogoutTask;
 import net.minelink.ctplus.task.TagUpdateTask;
+import net.minelink.ctplus.task.TickTask;
 import net.minelink.ctplus.util.BarUtils;
 import net.minelink.ctplus.util.DurationUtils;
 import net.minelink.ctplus.util.ReflectionUtils;
@@ -27,7 +28,9 @@ import org.mcstats.MetricsLite;
 import java.io.IOException;
 import java.util.UUID;
 
-import static org.bukkit.ChatColor.*;
+import static org.bukkit.ChatColor.GRAY;
+import static org.bukkit.ChatColor.GREEN;
+import static org.bukkit.ChatColor.RED;
 
 public final class CombatTagPlus extends JavaPlugin {
 
@@ -42,6 +45,8 @@ public final class CombatTagPlus extends JavaPlugin {
     private NpcPlayerHelper npcPlayerHelper;
 
     private NpcManager npcManager;
+
+    private TickTask tickTask;
 
     public PlayerCache getPlayerCache() {
         return playerCache;
@@ -67,6 +72,10 @@ public final class CombatTagPlus extends JavaPlugin {
         return npcManager;
     }
 
+    public TickTask getTickTask() {
+        return tickTask;
+    }
+
     @Override
     public void onEnable() {
         // Disable plugin if version compatibility check fails
@@ -88,6 +97,7 @@ public final class CombatTagPlus extends JavaPlugin {
         hookManager = new HookManager(this);
         npcManager = new NpcManager(this);
         tagManager = new TagManager(this);
+        tickTask = new TickTask(this);
 
         NpcNameGeneratorFactory.setNameGenerator(new NpcNameGeneratorImpl(this));
 
@@ -119,7 +129,6 @@ public final class CombatTagPlus extends JavaPlugin {
         Bukkit.getScheduler().runTaskTimer(this, new Runnable() {
             @Override
             public void run() {
-                getTagManager().purgeExpired();
                 TagUpdateTask.purgeFinished();
                 SafeLogoutTask.purgeFinished();
             }
@@ -253,12 +262,12 @@ public final class CombatTagPlus extends JavaPlugin {
 
             UUID uniqueId = ((Player) sender).getUniqueId();
             Tag tag = getTagManager().getTag(uniqueId);
-            if (tag == null || tag.isExpired() || !getTagManager().isTagged(uniqueId)) {
+            if (tag == null || !getTagManager().isTagged(uniqueId)) {
                 sender.sendMessage(GREEN + "You are not in combat.");
                 return true;
             }
 
-            String duration = DurationUtils.format(tag.getTagDuration());
+            String duration = DurationUtils.format(getTagManager().getTagExpireTask(uniqueId).getRemainingTicks() * 50);
             sender.sendMessage(RED + duration + GRAY + " remaining on your combat timer.");
         } else if (cmd.getName().equals("ctpluslogout")) {
             if (!(sender instanceof Player)) return false;

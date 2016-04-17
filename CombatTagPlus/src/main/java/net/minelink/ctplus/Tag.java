@@ -2,15 +2,10 @@ package net.minelink.ctplus;
 
 import net.minelink.ctplus.compat.api.NpcPlayerHelper;
 import org.bukkit.entity.Player;
-import org.bukkit.util.NumberConversions;
 
 import java.util.UUID;
 
 public final class Tag {
-
-    private long tagTime = System.currentTimeMillis();
-
-    private long expireTime;
 
     private UUID victimId;
 
@@ -20,9 +15,7 @@ public final class Tag {
 
     private String attackerName;
 
-    Tag(NpcPlayerHelper helper, long expireTime, Player victim, Player attacker) {
-        this.expireTime = expireTime;
-
+    Tag(NpcPlayerHelper helper, Player victim, Player attacker) {
         // Determine victim identity
         if (victim != null) {
             if (helper.isNpc(victim)) {
@@ -46,18 +39,6 @@ public final class Tag {
         }
     }
 
-    public long getTagTime() {
-        return tagTime;
-    }
-
-    public long getExpireTime() {
-        return expireTime;
-    }
-
-    public void setExpireTime(long expireTime) {
-        this.expireTime = expireTime;
-    }
-
     public UUID getVictimId() {
         return victimId;
     }
@@ -72,15 +53,6 @@ public final class Tag {
 
     public String getAttackerName() {
         return attackerName;
-    }
-
-    public int getTagDuration() {
-        long currentTime = System.currentTimeMillis();
-        return expireTime > currentTime ? NumberConversions.ceil((expireTime - currentTime) / 1000D) : 0;
-    }
-
-    public boolean isExpired() {
-        return getTagDuration() < 1;
     }
 
 }

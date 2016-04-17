@@ -1,6 +1,7 @@
 package net.minelink.ctplus.task;
 
 import net.minelink.ctplus.CombatTagPlus;
+import net.minelink.ctplus.event.CombatUntagReason;
 import net.minelink.ctplus.util.DurationUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -65,7 +66,7 @@ public final class SafeLogoutTask extends BukkitRunnable {
         int remainingSeconds = getRemainingSeconds();
         if (remainingSeconds <= 0) {
             finished = true;
-            plugin.getTagManager().untag(playerId);
+            plugin.getTagManager().untag(playerId, CombatUntagReason.SAFE_LOGOUT);
 
             if (!plugin.getSettings().getLogoutSuccessMessage().isEmpty()) {
                 player.kickPlayer(plugin.getSettings().getLogoutSuccessMessage());

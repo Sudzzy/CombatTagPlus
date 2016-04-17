@@ -13,7 +13,6 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 public final class NpcManager {
 
@@ -70,9 +69,8 @@ public final class NpcManager {
         }
 
         // Create and start the NPCs despawn task
-        long despawnTime = System.currentTimeMillis() + plugin.getSettings().getNpcDespawnMillis();
-        NpcDespawnTask despawnTask = new NpcDespawnTask(plugin, npc, despawnTime);
-        despawnTask.start();
+        NpcDespawnTask despawnTask = new NpcDespawnTask(plugin, npc);
+        despawnTask.start(plugin.getSettings().getNpcDespawnTicks());
         despawnTasks.put(npc, despawnTask);
 
         return npc;
