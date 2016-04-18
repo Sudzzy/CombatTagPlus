@@ -2,6 +2,7 @@ package net.minelink.ctplus;
 
 import net.minelink.ctplus.event.NpcDespawnEvent;
 import net.minelink.ctplus.event.NpcDespawnReason;
+import net.minelink.ctplus.event.NpcPreSpawnEvent;
 import net.minelink.ctplus.task.NpcDespawnTask;
 import org.bukkit.Bukkit;
 import org.bukkit.Effect;
@@ -30,6 +31,13 @@ public final class NpcManager {
         // Do nothing if player already has a NPC
         Npc npc = getSpawnedNpc(player.getUniqueId());
         if (npc != null) return null;
+
+        // Do nothing if this players NPC should not be spawned.
+        NpcPreSpawnEvent event = new NpcPreSpawnEvent(player);
+        plugin.getServer().getPluginManager().callEvent(event);
+        if (event.isCancelled()) {
+            return null;
+        }
 
         // Spawn fake player entity
         npc = new Npc(plugin.getNpcPlayerHelper(), plugin.getNpcPlayerHelper().spawn(player));
