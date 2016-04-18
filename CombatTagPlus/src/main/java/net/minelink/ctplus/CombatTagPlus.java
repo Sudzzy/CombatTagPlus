@@ -22,6 +22,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.mcstats.MetricsLite;
 
@@ -113,10 +114,12 @@ public final class CombatTagPlus extends JavaPlugin {
         }
 
         // Register event listeners
-        Bukkit.getPluginManager().registerEvents(new ForceFieldListener(this), this);
-        Bukkit.getPluginManager().registerEvents(new NpcListener(this), this);
-        Bukkit.getPluginManager().registerEvents(new PlayerListener(this), this);
-        Bukkit.getPluginManager().registerEvents(new TagListener(this), this);
+        PluginManager pm = getServer().getPluginManager();
+        pm.registerEvents(new ForceFieldListener(this), this);
+        pm.registerEvents(new NpcListener(this), this);
+        pm.registerEvents(new PlayerListener(this), this);
+        pm.registerEvents(new TagListener(this), this);
+        pm.registerEvents(tagManager, this);
 
         if (Bukkit.getPluginManager().isPluginEnabled("PlayerHeads")) {
             Bukkit.getPluginManager().registerEvents(new PlayerHeadsListener(this), this);

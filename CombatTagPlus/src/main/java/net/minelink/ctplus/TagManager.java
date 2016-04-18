@@ -6,14 +6,24 @@ import net.minelink.ctplus.event.CombatUntagReason;
 import net.minelink.ctplus.event.PlayerCombatTagEvent;
 import net.minelink.ctplus.task.TagExpireTask;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
-public final class TagManager {
+public final class TagManager implements Listener {
 
     private final CombatTagPlus plugin;
+
+    private final Set<Player> onlineTaggedPlayers = new HashSet<>();
 
     private final Map<UUID, Tag> tags = new HashMap<>();
 
@@ -21,6 +31,18 @@ public final class TagManager {
 
     TagManager(CombatTagPlus plugin) {
         this.plugin = plugin;
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
+    public void addOnlineTaggedPlayer(PlayerJoinEvent event) {
+        if (isTagged(event.getPlayer().getUniqueId())) {
+            onlineTaggedPlayers.add(event.getPlayer());
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void removeOnlineTaggedPlayer(PlayerQuitEvent event) {
+        onlineTaggedPlayers.remove(event.getPlayer());
     }
 
     public void tag(Player victim, Player attacker) {
@@ -72,12 +94,14 @@ public final class TagManager {
         if (victim != null) {
             tags.put(victimId, tag);
             expireTasks.put(victimId, new TagExpireTask(plugin, victimId));
+            onlineTaggedPlayers.add(victim);
         }
 
         // Add attacker to tagged players
         if (attacker != null) {
             tags.put(attackerId, tag);
             expireTasks.put(attackerId, new TagExpireTask(plugin, attackerId));
+            onlineTaggedPlayers.add(attacker);
         }
     }
 
@@ -95,6 +119,9 @@ public final class TagManager {
         CombatUntagEvent untagEvent = new CombatUntagEvent(playerId, reason);
         plugin.getServer().getPluginManager().callEvent(untagEvent);
         tags.remove(playerId);
+
+        // Remove from the online tagged players cache.
+        onlineTaggedPlayers.remove(plugin.getPlayerCache().getPlayer(playerId));
 
         // Stop the tag expire task if still running.
         TagExpireTask task = expireTasks.remove(playerId);
@@ -131,6 +158,10 @@ public final class TagManager {
 
     public TagExpireTask getTagExpireTask(UUID playerId) {
         return expireTasks.get(playerId);
+    }
+
+    public Set<Player> getOnlineTaggedPlayers() {
+        return Collections.unmodifiableSet(onlineTaggedPlayers);
     }
 
 }
